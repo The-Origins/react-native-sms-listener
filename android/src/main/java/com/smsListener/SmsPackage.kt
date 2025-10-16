@@ -1,4 +1,4 @@
-package com.smsreceipts
+package com.smsListener
 
 
 import com.facebook.react.ReactPackage

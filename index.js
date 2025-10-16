@@ -4,7 +4,7 @@ const { SmsReceiptModule } = NativeModules
 
 function ensureAndroid() {
   if (Platform.OS !== 'android') {
-    throw new Error('react-native-sms-receipt-listener: android only')
+    throw new Error('react-native-sms-listener: android only')
   }
   if (!SmsReceiptModule) {
     throw new Error('SmsReceiptModule native module not found — did you install & rebuild the native app?')

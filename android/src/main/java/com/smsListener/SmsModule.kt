@@ -1,4 +1,4 @@
-package com.smsreceipts
+package com.smsListener
 
 import com.facebook.react.bridge.*
 import android.content.Context
@@ -22,7 +22,7 @@ class SmsModule(private val reactContext: ReactApplicationContext) : ReactContex
     }
 
     override fun getName(): String {
-        return "SmsReceiptModule"
+        return "SmsListenerModule"
     }
 
     @ReactMethod
