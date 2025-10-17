@@ -17,12 +17,7 @@ android {
         targetSdkVersion safeExtGet("targetSdkVersion", 24)}
 
 
-    namespace 'com.pdftextextractor'
-}
-
-repositories {
-    google()
-    mavenCentral()
+    namespace 'com.smsListener'
 }
 
 dependencies {
