@@ -35,10 +35,9 @@ dependencies {
     implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.room:room-runtime:2.6.1"
     kapt "androidx.room:room-compiler:2.6.1"
-    
     implementation "androidx.room:room-ktx:2.6.1"
 
-    // Optional: lifecycle/runtime helpers (if needed later)
+    // Optional: lifecycle/runtime helpers
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
 
     // For background threading / executors
