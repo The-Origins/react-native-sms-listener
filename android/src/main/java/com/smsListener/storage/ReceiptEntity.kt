@@ -10,5 +10,6 @@ import androidx.room.PrimaryKey
 data class ReceiptEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "body") val body: String,
-    @ColumnInfo(name = "captured_at") val capturedAt: Long
+    @ColumnInfo(name = "captured_at") val capturedAt: Long,
+    @ColumnInfo(name = "hash") val hash: String,
 )

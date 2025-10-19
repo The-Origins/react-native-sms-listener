@@ -10,10 +10,16 @@ import android.telephony.SmsMessage
 import android.util.Log
 import com.smsListener.storage.ReceiptDatabase
 import com.smsListener.storage.ReceiptEntity
+import java.security.MessageDigest
 import java.util.concurrent.Executors
 
 
 private const val TAG = "SmsReceiver"
+
+private fun String.toMD5(): String {
+    val bytes = MessageDigest.getInstance("MD5").digest(this.toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
+}
 
 
 class SmsReceiver : BroadcastReceiver() {
@@ -63,47 +69,53 @@ class SmsReceiver : BroadcastReceiver() {
                 return
             }
 
+            val messages = mutableListOf<SmsMessage>()
             for (pdu in pdusObj) {
-                try {
-                    val bytes = when (pdu) {
-                        is ByteArray -> pdu
-                        else -> continue
-                    }
-
-
-                    val sms = if (format != null) {
-                        SmsMessage.createFromPdu(bytes, format)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        SmsMessage.createFromPdu(bytes)
-                    }
-
-                    val sender = sms.originatingAddress ?: ""
-                    val body = sms.messageBody ?: ""
-
-
-                    // match: sender contains contactName (case-insensitive) AND regex matches body
-                    val contactMatch = sender.lowercase().contains(contactName.lowercase()) || body.lowercase().contains(contactName.lowercase())
-                    val regexMatch = pattern.containsMatchIn(body)
-
-                    if (contactMatch && regexMatch) {
-                        // persist the entire message body using Room on background thread
-                        executor.execute {
-                            try {
-                                val db = ReceiptDatabase.getInstance(context)
-                                db.receiptDao().insert(ReceiptEntity(body = body, capturedAt = System.currentTimeMillis()))
-                                Log.d(TAG, "stored message from $sender matching contact '$contactName'")
-                            } catch (dbEx: Exception) {
-                                Log.e(TAG, "db insert error: ${dbEx.message}")
-                            }
-                        }
-                    } else {
-                        Log.v(TAG, "message from $sender did not match contact/regex")
-                    }
-
-                } catch (inner: Exception) {
-                    Log.w(TAG, "pdu parse error: ${inner.message}")
+                val bytes = pdu as? ByteArray ?: continue
+                val sms = if (format != null) {
+                    SmsMessage.createFromPdu(bytes, format)
+                } else {
+                    @Suppress("DEPRECATION")
+                    SmsMessage.createFromPdu(bytes)
                 }
+                messages.add(sms)
+            }
+
+            if (messages.isEmpty()) return
+
+            // Combine all parts into one complete message
+            val fullBody = messages.joinToString(separator = "") { it.messageBody ?: "" }
+            val sender = messages.first().originatingAddress ?: ""
+
+            // Check both sender/contact and regex on fullBody
+            val contactMatch = sender.contains(contactName, ignoreCase = true)
+                    || fullBody.contains(contactName, ignoreCase = true)
+            val regexMatch = pattern.containsMatchIn(fullBody)
+
+            if (contactMatch && regexMatch) {
+                executor.execute {
+                    try {
+                        val db = ReceiptDatabase.getInstance(context)
+                        val hash = fullBody.toMD5()
+                        val exists = db.receiptDao().exists(hash)
+                        if(exists == null){
+                            db.receiptDao().insert(
+                                ReceiptEntity(
+                                    body = fullBody,
+                                    capturedAt = System.currentTimeMillis()
+                                    hash = hash
+                                )
+                            )
+                            Log.d(TAG, "stored full message from $sender matching contact '$contactName'")
+                        }else{
+                            Log.d(TAG, "duplicate message ignored")
+                        }
+                    } catch (dbEx: Exception) {
+                        Log.e(TAG, "db insert error: ${dbEx.message}")
+                    }
+                }
+            } else {
+                Log.v(TAG, "message from $sender did not match contact/regex")
             }
         
         } catch (e: Exception) {
