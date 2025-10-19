@@ -1,75 +1,68 @@
-import { NativeModules, Platform } from 'react-native'
+import { NativeModules, Platform, PermissionsAndroid } from "react-native";
 
-const { SmsReceiptModule } = NativeModules
+const { SmsListenerModule } = NativeModules;
 
 function ensureAndroid() {
-  if (Platform.OS !== 'android') {
-    throw new Error('react-native-sms-listener: android only')
-  }
-  if (!SmsReceiptModule) {
-    throw new Error('SmsReceiptModule native module not found — did you install & rebuild the native app?')
-  }
+  if (Platform.OS !== "android")
+    throw new Error("react-native-sms-receipt-listener works only on Android");
 }
 
 /**
- * startCapture(contactName: string): Promise<boolean>
- * - contactName: free text used to match sender or body (case-insensitive substring)
+ * Requests Android SMS-related permissions.
  */
-export async function startCapture(contactName) {
-  ensureAndroid()
-  if (typeof contactName !== 'string' || contactName.trim().length === 0) {
-    throw new Error('startCapture requires a non-empty contactName string')
-  }
-  return await SmsReceiptModule.startCapture(contactName)
+export async function requestSmsPermissions() {
+  if (Platform.OS !== "android") return true;
+  const perms = [PermissionsAndroid.PERMISSIONS.RECEIVE_SMS];
+  const result = await PermissionsAndroid.requestMultiple(perms);
+  return perms.every((p) => result[p] === PermissionsAndroid.RESULTS.GRANTED);
 }
 
 /**
- * stopCapture(): Promise<boolean>
- * - disables capture and clears target
+ * Starts SMS capture for a specific contact and regex condition.
+ */
+export async function startCapture(contactName, storeCondition) {
+  ensureAndroid();
+  return SmsListenerModule.startCapture(contactName, storeCondition);
+}
+
+/**
+ * Stops SMS capture.
  */
 export async function stopCapture() {
-  ensureAndroid()
-  return await SmsReceiptModule.stopCapture()
+  ensureAndroid();
+  return SmsListenerModule.stopCapture();
 }
 
 /**
- * Optional convenience:
- * isCaptureActive(): Promise<{ enabled: boolean, contact: string | null }>
+ * Checks if SMS capture is currently active.
  */
 export async function isCaptureActive() {
-  ensureAndroid()
-  if (SmsReceiptModule.isCaptureActive) {
-    return await SmsReceiptModule.isCaptureActive()
-  }
-  return { enabled: false, contact: null }
+  ensureAndroid();
+  return SmsListenerModule.isCaptureActive();
 }
 
 /**
- * getStoredReceipts(): Promise<Receipt[]>
- * - Fetches receipts captured while app was closed or in background.
+ * Returns stored SMS messages matching conditions.
+ * @returns {Promise<string[]>}
  */
 export async function getStoredReceipts() {
-  ensureAndroid()
-  if (!SmsReceiptModule.getStoredReceipts)
-    throw new Error('getStoredReceipts() not implemented on native side')
-  return await SmsReceiptModule.getStoredReceipts()
+  ensureAndroid();
+  return SmsListenerModule.getStoredReceipts();
 }
 
 /**
- * clearStoredReceipts(): Promise<boolean>
- * - Clears the native cache after syncing to expo-sqlite or backend.
+ * Clears stored messages.
  */
 export async function clearStoredReceipts() {
-  ensureAndroid()
-  if (!SmsReceiptModule.clearStoredReceipts)
-    throw new Error('clearStoredReceipts() not implemented on native side')
-  return await SmsReceiptModule.clearStoredReceipts()
+  ensureAndroid();
+  return SmsListenerModule.clearStoredReceipts();
 }
 
 export default {
+  requestSmsPermissions,
   startCapture,
   stopCapture,
   isCaptureActive,
   getStoredReceipts,
   clearStoredReceipts,
-}
+};
