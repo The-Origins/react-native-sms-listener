@@ -35,6 +35,9 @@ dependencies {
     implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.room:room-runtime:2.6.1"
     kapt "androidx.room:room-compiler:2.6.1"
+    // Add this line to fix the SQLite native library issue for Kapt
+    kapt "org.xerial:sqlite-jdbc:3.34.0" // Or a more recent version
+    
     implementation "androidx.room:room-ktx:2.6.1"
 
     // Optional: lifecycle/runtime helpers (if needed later)
