@@ -102,7 +102,7 @@ class SmsReceiver : BroadcastReceiver() {
                             db.receiptDao().insert(
                                 ReceiptEntity(
                                     body = fullBody,
-                                    capturedAt = System.currentTimeMillis()
+                                    capturedAt = System.currentTimeMillis(),
                                     hash = hash
                                 )
                             )
