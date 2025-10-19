@@ -1,27 +1,54 @@
-// Minimal module-level build.gradle for the library
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
-
 android {
-    compileSdkVersion safeExtGet("compileSdkVersion", 35)
+    namespace 'com.smsreceipts'  // match your package name
+    compileSdkVersion safeExtGet("compileSdkVersion", 34)
 
     defaultConfig {
-        minSdkVersion safeExtGet("minSdkVersion", 35)
-        targetSdkVersion safeExtGet("targetSdkVersion", 24)}
+        minSdkVersion safeExtGet("minSdkVersion", 23)
+        targetSdkVersion safeExtGet("targetSdkVersion", 34)
 
+        // Room requires Java 8+
+        multiDexEnabled true
+    }
 
-    namespace 'com.smsListener'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        buildConfig = false
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-    implementation 'com.facebook.react:react-native:+' // provided by host app at runtime
+    // Kotlin + React Native bridge
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    implementation "com.facebook.react:react-native:+" // provided by RN runtime
+
+    // AndroidX + Room for persistence
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.room:room-runtime:2.6.1"
+    kapt "androidx.room:room-compiler:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+
+    // Optional: lifecycle/runtime helpers (if needed later)
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+
+    // For background threading / executors
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
 }
