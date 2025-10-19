@@ -1,4 +1,4 @@
-declare module 'react-native-sms-receipt-listener' {
+declare module 'react-native-sms-listener' {
   /**
    * Requests SMS permissions on Android.
    */

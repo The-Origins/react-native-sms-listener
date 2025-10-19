@@ -4,7 +4,7 @@ const { SmsListenerModule } = NativeModules;
 
 function ensureAndroid() {
   if (Platform.OS !== "android")
-    throw new Error("react-native-sms-receipt-listener works only on Android");
+    throw new Error("react-native-sms-listener works only on Android");
 }
 
 /**
