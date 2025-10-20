@@ -28,7 +28,7 @@ android {
 dependencies {
     // Kotlin + React Native bridge
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
     implementation "com.facebook.react:react-native:+" // provided by RN runtime
 
     // AndroidX + Room for persistence
@@ -36,9 +36,6 @@ dependencies {
     implementation "androidx.room:room-runtime:2.6.1"
     kapt "androidx.room:room-compiler:2.6.1"
     implementation "androidx.room:room-ktx:2.6.1"
-
-    // Optional: lifecycle/runtime helpers
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
 
     // For background threading / executors
     implementation "androidx.work:work-runtime-ktx:2.9.1"
