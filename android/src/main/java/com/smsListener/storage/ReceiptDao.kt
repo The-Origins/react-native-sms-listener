@@ -9,7 +9,7 @@ import androidx.room.OnConflictStrategy
 
 @Dao
 interface ReceiptDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE || -1)
     fun insert(receipt: ReceiptEntity): Long
 
 
