@@ -1,6 +1,7 @@
-import { NativeModules, Platform, PermissionsAndroid } from "react-native";
+import { NativeModules, Platform, PermissionsAndroid, NativeEventEmitter  } from "react-native";
 
 const { SmsListenerModule } = NativeModules;
+const emitter = SmsReceiptModule ? new NativeEventEmitter(SmsReceiptModule) : null
 
 function ensureAndroid() {
   if (Platform.OS !== "android")
@@ -15,6 +16,18 @@ export async function requestSmsPermissions() {
   const perms = [PermissionsAndroid.PERMISSIONS.RECEIVE_SMS];
   const result = await PermissionsAndroid.requestMultiple(perms);
   return perms.every((p) => result[p] === PermissionsAndroid.RESULTS.GRANTED);
+}
+
+/**
+ * Subscribe to live capture events.
+ * callback receives object { id: number, body: string, }
+ * Returns a subscription object. Call subscription.remove() to unsubscribe.
+ */
+export function addOnMessageCapturedListener(callback) {
+  ensureAndroid()
+  if (!emitter) throw new Error('NativeEventEmitter unavailable')
+  const sub = emitter.addListener('SmsReceiptCaptured', callback)
+  return sub
 }
 
 /**
@@ -58,11 +71,22 @@ export async function clearStoredReceipts() {
   return SmsListenerModule.clearStoredReceipts();
 }
 
+/**
+ * Delete by id:
+ */
+export async function deleteReceipt(id) {
+  ensureAndroid()
+  if (typeof id !== 'number') throw new Error('id must be a number')
+  return await SmsReceiptModule.deleteReceipt(id)
+}
+
 export default {
   requestSmsPermissions,
+  addOnMessageCapturedListener,
   startCapture,
   stopCapture,
   isCaptureActive,
   getStoredReceipts,
   clearStoredReceipts,
+  deleteReceipt
 };

@@ -8,7 +8,28 @@ import java.util.concurrent.Executors
 class SmsModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
+  
+
+  companion object {
+    // static holder so SmsReceiver can emit events if JS bridge is active
+    @JvmStatic
+    var reactContextStatic: ReactApplicationContext? = null
+
+    fun emitEvent(eventName: String, params: WritableMap) {
+      try {
+        reactContextStatic?.getJSModule(RCTDeviceEventEmitter::class.java)?.emit(eventName, params)
+      } catch (e: Exception) {
+        // If reactContext isn't ready or bridge not active, ignore
+      }
+    }
+  }
+
   private val executor = Executors.newSingleThreadExecutor()
+
+  init {
+    // Save ReactApplicationContext for other native classes (like BroadcastReceiver)
+    reactContextStatic = reactContext
+  }
 
   override fun getName(): String = "SmsListenerModule"
 
@@ -77,6 +98,22 @@ class SmsModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(true)
       } catch (e: Exception) {
         promise.reject("ERR_CLEAR_RECEIPTS", e)
+      }
+    }
+  }
+
+  /** Delete a single receipt by id, resolves true if deleted (rows > 0) */
+  @ReactMethod
+  fun deleteReceipt(id: Double, promise: Promise) {
+    // RN numbers are doubles; convert to Long
+    val longId = id.toLong()
+    executor.execute {
+      try {
+        val db = ReceiptDatabase.getInstance(reactContext)
+        val deleted = db.receiptDao().deleteById(longId)
+        promise.resolve(deleted > 0)
+      } catch (e: Exception) {
+        promise.reject("ERR_DELETE_RECEIPT", e)
       }
     }
   }

@@ -16,6 +16,9 @@ interface ReceiptDao {
     @Query("SELECT body FROM stored_receipts ORDER BY captured_at ASC")
     fun getAllBodies(): List<String>
 
+    @Query("DELETE FROM stored_receipts WHERE id = :id")
+    fun deleteById(id: Long): Int
+
     @Query("SELECT hash FROM stored_receipts WHERE hash = :hash LIMIT 1")
     fun exists(hash: String): String?
 

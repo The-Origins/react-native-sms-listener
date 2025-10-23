@@ -12,6 +12,8 @@ import com.smsListener.storage.ReceiptDatabase
 import com.smsListener.storage.ReceiptEntity
 import java.security.MessageDigest
 import java.util.concurrent.Executors
+import com.facebook.react.bridge.Arguments
+import com.smsListener.SmsModule
 
 
 private const val TAG = "SmsReceiver"
@@ -99,14 +101,28 @@ class SmsReceiver : BroadcastReceiver() {
                         val hash = fullBody.toMD5()
                         val exists = db.receiptDao().exists(hash)
                         if(exists == null){
-                            db.receiptDao().insert(
+                            val insertedId = db.receiptDao().insert(
                                 ReceiptEntity(
                                     body = fullBody,
                                     capturedAt = System.currentTimeMillis(),
                                     hash = hash
                                 )
                             )
-                            Log.d(TAG, "stored full message from $sender matching contact '$contactName'")
+                            if(insertedId > 0){
+                                // Attempt to emit to JS if bridge is active
+                                try {
+                                    val params = Arguments.createMap()
+                                    params.putDouble("id", insertedId.toDouble())
+                                    params.putString("body", fullBody)
+                                    SmsModule.emitEvent("SmsReceiptCaptured", params)
+                                } catch (emitEx: Exception) {
+                                    // ignore — JS not active or react context not initialized
+                                    Log.v(TAG, "JS bridge not active; event not sent")
+                                }
+                                Log.d(TAG, "stored full message from $sender matching contact '$contactName'")
+                            }else{
+                                Log.d(TAG, "insert returned id <= 0 (duplicate or ignored)")
+                            }
                         }else{
                             Log.d(TAG, "duplicate message ignored")
                         }
