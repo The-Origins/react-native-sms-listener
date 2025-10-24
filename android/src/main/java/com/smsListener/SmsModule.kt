@@ -134,4 +134,14 @@ class SmsModule(private val reactContext: ReactApplicationContext) :
       }
     }
   }
+
+  @ReactMethod
+  fun addListener(eventName: String) {
+    // Required for RN built-in EventEmitter support
+  }
+
+  @ReactMethod
+  fun removeListeners(count: Double) {
+    // Required for RN built-in EventEmitter support
+  }
 }
