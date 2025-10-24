@@ -1,7 +1,14 @@
-import { NativeModules, Platform, PermissionsAndroid, NativeEventEmitter  } from "react-native";
+import {
+  NativeModules,
+  Platform,
+  PermissionsAndroid,
+  NativeEventEmitter,
+} from "react-native";
 
 const { SmsListenerModule } = NativeModules;
-const emitter = SmsReceiptModule ? new NativeEventEmitter(SmsReceiptModule) : null
+const emitter = SmsListenerModule
+  ? new NativeEventEmitter(SmsListenerModule)
+  : null;
 
 function ensureAndroid() {
   if (Platform.OS !== "android")
@@ -24,10 +31,10 @@ export async function requestSmsPermissions() {
  * Returns a subscription object. Call subscription.remove() to unsubscribe.
  */
 export function addOnMessageCapturedListener(callback) {
-  ensureAndroid()
-  if (!emitter) throw new Error('NativeEventEmitter unavailable')
-  const sub = emitter.addListener('SmsReceiptCaptured', callback)
-  return sub
+  ensureAndroid();
+  if (!emitter) throw new Error("NativeEventEmitter unavailable");
+  const sub = emitter.addListener("SmsReceiptCaptured", callback);
+  return sub;
 }
 
 /**
@@ -75,9 +82,9 @@ export async function clearStoredReceipts() {
  * Delete by id:
  */
 export async function deleteReceipt(id) {
-  ensureAndroid()
-  if (typeof id !== 'number') throw new Error('id must be a number')
-  return await SmsReceiptModule.deleteReceipt(id)
+  ensureAndroid();
+  if (typeof id !== "number") throw new Error("id must be a number");
+  return await SmsListenerModule.deleteReceipt(id);
 }
 
 export default {
@@ -88,5 +95,5 @@ export default {
   isCaptureActive,
   getStoredReceipts,
   clearStoredReceipts,
-  deleteReceipt
+  deleteReceipt,
 };
