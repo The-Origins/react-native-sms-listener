@@ -1,10 +1,13 @@
 package com.smsListener
 
+import android.util.Log
 import com.facebook.react.bridge.*
 import android.content.Context
 import com.smsListener.storage.ReceiptDatabase
 import java.util.concurrent.Executors
 import com.facebook.react.modules.core.DeviceEventManagerModule
+
+private const val TAG = "SmsModule"
 
 class SmsModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
