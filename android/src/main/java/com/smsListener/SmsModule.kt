@@ -16,15 +16,6 @@ class SmsModule(private val reactContext: ReactApplicationContext) :
     @JvmStatic
     var reactContextStatic: ReactApplicationContext? = null
 
-
-    fun emitEvent(eventName: String, params: WritableMap) {
-      try {
-        reactContextStatic?.getJSModule(RCTDeviceEventEmitter::class.java)?.emit(eventName, params)
-      } catch (e: Exception) {
-        // If reactContext isn't ready or bridge not active, ignore
-      }
-    }
-
     /**
      * Safely emit an event to JS if the bridge is active.
      * No-op if JS runtime isn't ready (avoids deprecation & crash).
