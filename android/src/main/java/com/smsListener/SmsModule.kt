@@ -4,6 +4,7 @@ import com.facebook.react.bridge.*
 import android.content.Context
 import com.smsListener.storage.ReceiptDatabase
 import java.util.concurrent.Executors
+import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class SmsModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -15,11 +16,33 @@ class SmsModule(private val reactContext: ReactApplicationContext) :
     @JvmStatic
     var reactContextStatic: ReactApplicationContext? = null
 
+
     fun emitEvent(eventName: String, params: WritableMap) {
       try {
         reactContextStatic?.getJSModule(RCTDeviceEventEmitter::class.java)?.emit(eventName, params)
       } catch (e: Exception) {
         // If reactContext isn't ready or bridge not active, ignore
+      }
+    }
+
+    /**
+     * Safely emit an event to JS if the bridge is active.
+     * No-op if JS runtime isn't ready (avoids deprecation & crash).
+     */
+    @JvmStatic
+    fun emitEvent(eventName: String, params: WritableMap?) {
+      val ctx = reactContextStatic ?: return
+      try {
+        if (ctx.hasActiveCatalystInstance()) {
+          ctx
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit(eventName, params)
+          Log.d(TAG, "Event emitted to JS: $eventName")
+        } else {
+          Log.v(TAG, "Bridge not active — skipped emit: $eventName")
+        }
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to emit event '$eventName': ${e.message}")
       }
     }
   }
