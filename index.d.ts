@@ -38,10 +38,17 @@ declare module 'react-native-sms-listener' {
    */
   export function deleteReceipt(id: number): Promise<boolean>
 
-  // event subscription
+  /**
+   * Add sms capture subsription
+   */
   export function addOnMessageCapturedListener(callback: (r: {id:number, body:string}) => void): {
     remove: () => void
   }
+
+  /**
+   * Remove sms capture subsription
+   */
+  export function removeMessageCapturedListener(): void
 
   const SmsReceiptListener: {
     requestSmsPermissions: typeof requestSmsPermissions

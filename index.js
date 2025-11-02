@@ -9,6 +9,7 @@ const { SmsListenerModule } = NativeModules;
 const emitter = SmsListenerModule
   ? new NativeEventEmitter(SmsListenerModule)
   : null;
+let subscription = null;
 
 function ensureAndroid() {
   if (Platform.OS !== "android")
@@ -33,8 +34,18 @@ export async function requestSmsPermissions() {
 export function addOnMessageCapturedListener(callback) {
   ensureAndroid();
   if (!emitter) throw new Error("NativeEventEmitter unavailable");
-  const sub = emitter.addListener("SmsReceiptCaptured", callback);
-  return sub;
+  //clear previous listeners
+  removeMessageCapturedListener()
+
+  subscription = emitter.addListener("SmsReceiptCaptured", callback);
+  return subscription;
+}
+
+export function removeMessageCapturedListener() {
+  if (subscription) {
+    subscription.remove();
+    subscription = null;
+  }
 }
 
 /**
