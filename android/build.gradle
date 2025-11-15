@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'   // <-- use KSP instead of KAPT
 }
 
 def safeExtGet(prop, fallback) {
@@ -9,15 +9,12 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    namespace 'com.smsListener'  // match your package name
+    namespace 'com.smsListener'
     compileSdkVersion safeExtGet("compileSdkVersion", 34)
 
     defaultConfig {
         minSdkVersion safeExtGet("minSdkVersion", 23)
         targetSdkVersion safeExtGet("targetSdkVersion", 34)
-
-        // Room requires Java 8+
-        multiDexEnabled true
     }
 
     buildFeatures {
@@ -26,23 +23,22 @@ android {
 }
 
 dependencies {
-    /////
-    // Kotlin + React Native bridge
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    // Use the Kotlin version from the root project to ensure alignment.
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.ext.kotlinVersion"
-    implementation "com.facebook.react:react-native:+" // provided by RN runtime
 
-    // AndroidX + Room for persistence
-    // Read versions from the root project if available, otherwise use a safe fallback.
-    implementation "androidx.core:core-ktx:${safeExtGet('androidxCoreKtxVersion', '1.13.1')}"
-    implementation "androidx.room:room-runtime:${safeExtGet('roomVersion', '2.6.1')}"
-    kapt "androidx.room:room-compiler:${safeExtGet('roomVersion', '2.6.1')}"
-    implementation "androidx.room:room-ktx:${safeExtGet('roomVersion', '2.6.1')}"
+    // IMPORTANT — match Expo/EAS Kotlin version!
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
 
-    // For background threading / executors
-    implementation "androidx.work:work-runtime-ktx:${safeExtGet('workVersion', '2.9.1')}"
+    // React Native runtime
+    implementation "com.facebook.react:react-native:+"
 
-    // REMOVE the explicit kotlinx-metadata-jvm dependency.
-    // The correct version will be resolved by the updated Kotlin and Room dependencies.
+    // AndroidX core
+    implementation "androidx.core:core-ktx:1.13.1"
+
+    // --- Room database (KSP version) ---
+    implementation "androidx.room:room-runtime:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+    ksp "androidx.room:room-compiler:2.6.1"
+
+    // Optional background threading helpers
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
 }
