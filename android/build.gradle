@@ -26,20 +26,23 @@ android {
 }
 
 dependencies {
+    /////
     // Kotlin + React Native bridge
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+    // Use the Kotlin version from the root project to ensure alignment.
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.ext.kotlinVersion"
     implementation "com.facebook.react:react-native:+" // provided by RN runtime
 
     // AndroidX + Room for persistence
-    implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.room:room-runtime:2.6.1"
-    kapt "androidx.room:room-compiler:2.6.1"
-    implementation "androidx.room:room-ktx:2.6.1"
+    // Read versions from the root project if available, otherwise use a safe fallback.
+    implementation "androidx.core:core-ktx:${safeExtGet('androidxCoreKtxVersion', '1.13.1')}"
+    implementation "androidx.room:room-runtime:${safeExtGet('roomVersion', '2.6.1')}"
+    kapt "androidx.room:room-compiler:${safeExtGet('roomVersion', '2.6.1')}"
+    implementation "androidx.room:room-ktx:${safeExtGet('roomVersion', '2.6.1')}"
 
     // For background threading / executors
-    implementation "androidx.work:work-runtime-ktx:2.9.1"
+    implementation "androidx.work:work-runtime-ktx:${safeExtGet('workVersion', '2.9.1')}"
 
-    // FIX: Add this line to force a newer metadata library for Kapt
-    kapt 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.8.0'
+    // REMOVE the explicit kotlinx-metadata-jvm dependency.
+    // The correct version will be resolved by the updated Kotlin and Room dependencies.
 }
